@@ -1,198 +1,43 @@
 @page "/"
-@using afya_admin.Data
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4 mb-6">
-    
-    @* Cabeçalho e Ações Principais *@
-    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4 wrap-reverse">
-        <div>
-            <MudText Typo="Typo.h5" Class="fw-bold">Dashboard</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Visão geral da plataforma e indicadores de desempenho.</MudText>
-        </div>
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-            <MudSelect T="string" Value="@_periodoSelecionado" ValueChanged="OnPeriodoChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Style="width: 170px;">
-                <MudSelectItem Value="@("Últimos 30 dias")">Últimos 30 dias</MudSelectItem>
-                <MudSelectItem Value="@("Últimos 7 dias")">Últimos 7 dias</MudSelectItem>
-                <MudSelectItem Value="@("Este mês")">Este mês</MudSelectItem>
-            </MudSelect>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Medium">
-                Novo Projeto
-            </MudButton>
-        </MudStack>
-    </MudStack>
+<PageTitle>Dashboard Afya Pedagógico</PageTitle>
 
-    @* 1. Seção de KPIs (4 Cards) *@
-    <MudGrid Class="mb-4">
-        @foreach (var kpi in _kpis)
-        {
-            <MudItem xs="12" sm="6" lg="3">
-                <KpiCard Titulo="@kpi.Titulo"
-                         Valor="@kpi.Valor"
-                         Variacao="@kpi.Variacao"
-                         IsPositivo="@kpi.IsPositivo"
-                         SparklineData="@kpi.SparklineData"
-                         Cor="@kpi.Cor" />
-            </MudItem>
-        }
-    </MudGrid>
+<CabecalhoPagina Titulo="Dashboard" Subtitulo="Visão geral da plataforma e indicadores de desempenho.">
+    <Acoes>
+        <SeletorPeriodo Opcoes="DashboardData.Periodos" @bind-Valor="_periodo" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Add">Novo Projeto</MudButton>
+    </Acoes>
+</CabecalhoPagina>
 
-    @* 2. Seção de Gráficos (Linha e Rosca) *@
-    <MudGrid Class="mb-4">
-        <MudItem xs="12" lg="8">
-            <DashboardCard Titulo="Receita e Crescimento" Subtitulo="Desempenho financeiro nos últimos meses">
-                <MudChart T="double" ChartType="ChartType.Line"
-                          XAxisLabels="@_mesesLabels"
-                          ChartSeries="@_seriesReceita"
-                          Width="100%"
-                          Height="300px" />
-            </DashboardCard>
+<MudGrid Spacing="3">
+    @foreach (var kpi in DashboardData.Kpis)
+    {
+        <MudItem xs="12" sm="6" lg="3">
+            <KpiCard Kpi="kpi" />
         </MudItem>
-        
-        <MudItem xs="12" lg="4">
-            <DashboardCard Titulo="Distribuição de Clientes">
-                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="relative my-2">
-                    <MudChart T="double" ChartType="ChartType.Donut"
-                              InputData="@_dadosClientes"
-                              InputLabels="@_labelsClientes"
-                              Width="220px"
-                              Height="220px" />
-                    <MudStack Spacing="0" AlignItems="AlignItems.Center" Class="absolute">
-                        <MudText Typo="Typo.h5" Class="fw-bold">1.842</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">clientes</MudText>
-                    </MudStack>
-                </MudStack>
-            </DashboardCard>
-        </MudItem>
-    </MudGrid>
+    }
 
-    @* 3. Performance dos Projetos & Atividades Recentes *@
-    <MudGrid Class="mb-4">
-        <MudItem xs="12" lg="7">
-            <DashboardCard Titulo="Performance dos Projetos">
-                <MudStack Spacing="3" Class="mt-2">
-                    @foreach (var proj in _performanceProjetos)
-                    {
-                        <div>
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-1">
-                                <MudText Typo="Typo.body2" Class="fw-bold">@proj.Nome</MudText>
-                                <MudStack Row="true" Spacing="2">
-                                    <MudText Typo="Typo.body2" Class="fw-bold">@proj.Progresso%</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@proj.TarefasInfo</MudText>
-                                </MudStack>
-                            </MudStack>
-                            <MudProgressLinear Color="@proj.Cor" Value="@proj.Progresso" Size="Size.Medium" Class="rounded-lg" />
-                        </div>
-                    }
-                </MudStack>
-            </DashboardCard>
-        </MudItem>
+    <MudItem xs="12" lg="7">
+        <GraficoReceita Meses="DashboardData.Meses" Receita="DashboardData.ReceitaMensal" Meta="DashboardData.MetaMensal" />
+    </MudItem>
 
-        <MudItem xs="12" lg="5">
-            <DashboardCard Titulo="Atividades Recentes">
-                <MudStack Spacing="3" Class="mt-1">
-                    @foreach (var act in _atividadesRecentes)
-                    {
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
-                                <MudAvatar Color="@act.CorAvatar" Size="Size.Medium">@act.Iniciais</MudAvatar>
-                                <div>
-                                    <MudText Typo="Typo.body2" Class="fw-bold">@act.Nome</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@act.Acao</MudText>
-                                </div>
-                            </MudStack>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@act.Tempo</MudText>
-                        </MudStack>
-                    }
-                </MudStack>
-            </DashboardCard>
-        </MudItem>
-    </MudGrid>
+    <MudItem xs="12" lg="5">
+        <GraficoDistribuicaoClientes Total="DashboardData.TotalClientes" Segmentos="DashboardData.SegmentosClientes" />
+    </MudItem>
 
-    @* 4. Tabela de Projetos Recentes *@
-    <MudGrid>
-        <MudItem xs="12">
-            <DashboardCard Titulo="Projetos Recentes">
-                <ActionContent>
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Size="Size.Small">
-                        Ver todos
-                    </MudButton>
-                </ActionContent>
-                <ChildContent>
-                    <MudTable Items="@_projetosRecentes" Elevation="0" Hover="true" Dense="true">
-                        <HeaderContent>
-                            <MudTh>Projeto</MudTh>
-                            <MudTh>Cliente</MudTh>
-                            <MudTh>Responsável</MudTh>
-                            <MudTh>Status</MudTh>
-                            <MudTh>Progresso</MudTh>
-                            <MudTh>Prazo</MudTh>
-                            <MudTh Style="text-align:right">Ações</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Projeto">
-                                <MudText Typo="Typo.body2" Class="fw-bold">@context.Nome</MudText>
-                            </MudTd>
-                            <MudTd DataLabel="Cliente">@context.Cliente</MudTd>
-                            <MudTd DataLabel="Responsável">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Size="Size.Small" Color="Color.Default">@context.IniciaisResponsavel</MudAvatar>
-                                    <MudText Typo="Typo.body2">@context.Responsavel</MudText>
-                                </MudStack>
-                            </MudTd>
-                            <MudTd DataLabel="Status">
-                                <MudChip T="string" Color="@context.CorStatus" Size="Size.Small" Variant="Variant.Text">
-                                    @context.Status
-                                </MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="Progresso">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="width: 140px;">
-                                    <MudProgressLinear Color="Color.Primary" Value="@context.Progresso" Size="Size.Small" Class="rounded-lg" />
-                                    <MudText Typo="Typo.caption">@context.Progresso%</MudText>
-                                </MudStack>
-                            </MudTd>
-                            <MudTd DataLabel="Prazo">@context.Prazo</MudTd>
-                            <MudTd DataLabel="Ações" Style="text-align:right">
-                                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small" />
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                </ChildContent>
-            </DashboardCard>
-        </MudItem>
-    </MudGrid>
+    <MudItem xs="12" lg="7">
+        <PerformanceProjetos Projetos="DashboardData.Performance" />
+    </MudItem>
 
-</MudContainer>
+    <MudItem xs="12" lg="5">
+        <AtividadesRecentes Atividades="DashboardData.Atividades" />
+    </MudItem>
+
+    <MudItem xs="12">
+        <ProjetosRecentes Projetos="DashboardData.ProjetosRecentes" />
+    </MudItem>
+</MudGrid>
 
 @code {
-    private string _periodoSelecionado = "Últimos 30 dias";
-
-    private List<KpiItem> _kpis = new();
-    private List<ProjetoPerformance> _performanceProjetos = new();
-    private List<AtividadeRecente> _atividadesRecentes = new();
-    private List<ProjetoDetalhe> _projetosRecentes = new();
-
-    private string[] _mesesLabels = { "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set" };
-    
-    // Especificação explícita de ChartSeries<double>
-    private List<ChartSeries<double>> _seriesReceita = new()
-    {
-        new ChartSeries<double> { Name = "Receita", Data = new double[] { 80, 120, 115, 130, 160, 165, 180, 200, 248 } },
-        new ChartSeries<double> { Name = "Meta", Data = new double[] { 50, 70, 72, 85, 100, 105, 120, 150, 180 } }
-    };
-
-    private double[] _dadosClientes = { 42, 31, 18, 9 };
-    private string[] _labelsClientes = { "Empresas", "Business", "Startup", "Outros" };
-
-    protected override void OnInitialized()
-    {
-        _kpis = DashboardMockData.ObterKpis();
-        _performanceProjetos = DashboardMockData.ObterPerformanceProjetos();
-        _atividadesRecentes = DashboardMockData.ObterAtividadesRecentes();
-        _projetosRecentes = DashboardMockData.ObterProjetosRecentes();
-    }
-
-    private void OnPeriodoChanged(string novoValor)
-    {
-        _periodoSelecionado = novoValor;
-    }
+    private string _periodo = "Últimos 30 dias";
 }
