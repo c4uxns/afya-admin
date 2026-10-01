@@ -1,0 +1,26 @@
+<MudPaper Elevation="1" Class="pa-4 rounded-lg h-100">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+        <div>
+            @if (!string.IsNullOrEmpty(Titulo))
+            {
+                <MudText Typo="Typo.h6" Class="fw-bold">@Titulo</MudText>
+            }
+            @if (!string.IsNullOrEmpty(Subtitulo))
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary">@Subtitulo</MudText>
+            }
+        </div>
+        @if (ActionContent != null)
+        {
+            <div>@ActionContent</div>
+        }
+    </MudStack>
+    @ChildContent
+</MudPaper>
+
+@code {
+    [Parameter] public string Titulo { get; set; } = "";
+    [Parameter] public string Subtitulo { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ActionContent { get; set; }
+}
