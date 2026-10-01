@@ -1,0 +1,27 @@
+<MudPaper Elevation="1" Class="pa-4 rounded-lg h-100">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@Titulo</MudText>
+            <MudText Typo="Typo.h5" Class="fw-bold">@Valor</MudText>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                <MudIcon Icon="@(IsPositivo ? Icons.Material.Filled.TrendingUp : Icons.Material.Filled.TrendingDown)"
+                         Color="@(IsPositivo ? Color.Success : Color.Error)" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="@(IsPositivo ? Color.Success : Color.Error)" Class="fw-bold">
+                    @Variacao
+                </MudText>
+            </MudStack>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">comparado ao mês anterior</MudText>
+        </MudStack>
+        
+        <MudSparkline T="double" Data="@SparklineData" Color="@Cor" Height="40" Width="80" StrokeWidth="2" />
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string Titulo { get; set; } = "";
+    [Parameter] public string Valor { get; set; } = "";
+    [Parameter] public string Variacao { get; set; } = "";
+    [Parameter] public bool IsPositivo { get; set; } = true;
+    [Parameter] public double[] SparklineData { get; set; } = Array.Empty<double>();
+    [Parameter] public Color Cor { get; set; } = Color.Primary;
+}
